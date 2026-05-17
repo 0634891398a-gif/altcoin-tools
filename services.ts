@@ -1,39 +1,29 @@
-type Game = { id: number; name: string; score: number; };
+import axios from 'axios';
+import { GameData, ApiResponse } from './types';
 
-type Player = { id: number; name: string; balance: number; };
+const API_URL = 'https://api.altcoingaming.com/games';
 
-const games: Game[] = [];
-const players: Player[] = [];
+export class GameService {
+  private static cache: Map<string, GameData> = new Map();
 
-function addGame(game: Game): void {
-    games.push(game);
+  public static async fetchGameData(gameId: string): Promise<GameData> {
+    if (this.cache.has(gameId)) {
+      return this.cache.get(gameId)!;
+    }
+
+    const response: ApiResponse = await axios.get(`${API_URL}/${gameId}`);
+    const gameData: GameData = response.data;
+    this.cache.set(gameId, gameData);
+
+    return gameData;
+  }
+
+  public static clearCache(): void {
+    this.cache.clear();
+  }
 }
 
-function addPlayer(player: Player): void {
-    players.push(player);
-}
-
-function updateScore(gameId: number, newScore: number): string {
-    const game = games.find(g => g.id === gameId);
-    if (!game) return 'Game not found';
-    game.score = newScore;
-    return `Score updated for ${game.name}`;
-}
-
-function getPlayerBalance(playerId: number): number | string {
-    const player = players.find(p => p.id === playerId);
-    return player ? player.balance : 'Player not found';
-}
-
-function transferFunds(fromId: number, toId: number, amount: number): string {
-    const sender = players.find(p => p.id === fromId);
-    const receiver = players.find(p => p.id === toId);
-    if (!sender) return 'Sender not found';
-    if (!receiver) return 'Receiver not found';
-    if (sender.balance < amount) return 'Insufficient funds';
-    sender.balance -= amount;
-    receiver.balance += amount;
-    return `Transferred ${amount} from ${sender.name} to ${receiver.name}`;
-}
-
-export { addGame, addPlayer, updateScore, getPlayerBalance, transferFunds };
+export const getGameList = async (): Promise<GameData[]> => {
+  const response: ApiResponse = await axios.get(API_URL);
+  return response.data;
+};
