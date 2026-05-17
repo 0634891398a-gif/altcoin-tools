@@ -1,53 +1,30 @@
-/**
- * Represents a player in the game.
- */
-interface Player {
-    /** Unique identifier for the player */
+export type Player = {
     id: string;
-    /** The player's name */
     name: string;
-    /** The current score of the player */
     score: number;
-    /** The level the player is currently on */
-    level: number;
-    /** List of items owned by the player */
-    items: Item[];
-}
+    inventory: InventoryItem[];
+};
 
-/**
- * Represents an item in the game.
- */
-interface Item {
-    /** Unique identifier for the item */
-    id: string;
-    /** The name of the item */
-    name: string;
-    /** The type of the item (e.g., weapon, armor) */
-    type: string;
-    /** How much this item boosts the player's stats */
-    boost: number;
-}
+export type InventoryItem = {
+    itemId: string;
+    quantity: number;
+};
 
-/**
- * Represents a game session.
- */
-interface GameSession {
-    /** Unique session identifier */
+export type GameSession = {
     sessionId: string;
-    /** The players involved in this session */
     players: Player[];
-    /** The current status of the session */
-    status: 'active' | 'completed' | 'pending';
-}
+    startedAt: Date;
+    endedAt?: Date;
+};
 
-/**
- * Represents the configuration for the game.
- */
-interface GameConfig {
-    /** The maximum number of players allowed */
+export type GameConfig = {
     maxPlayers: number;
-    /** Duration of the game in minutes */
-    gameDuration: number;
-    /** The initial score for each player */
-    initialScore: number;
-}
+    duration: number;
+    rules: string[];
+};
+
+export type GameResult = {
+    winner: Player;
+    duration: number;
+    scores: Record<string, number>;
+};
