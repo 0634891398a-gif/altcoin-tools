@@ -1,27 +1,35 @@
-type ApiResponse<T> = {
-    data?: T;
-    error?: string;
-};
+import * as fs from 'fs';
+import * as path from 'path';
+import { createLogger, transports, format } from 'winston';
+import 'winston-daily-rotate-file';
 
-// A generic function to handle API responses
-function handleApiResponse<T>(response: ApiResponse<T>): T | never {
-    if (response.error) {
-        throw new Error(`API Error: ${response.error}`);
-    }
-    if (!response.data) {
-        throw new Error('No data returned');
-    }
-    return response.data;
+const logDir = path.join(__dirname, 'logs');
+
+if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir);
 }
 
-// Function to fetch game data from a mock API
-async function fetchGameData(gameId: string): Promise<{ id: string; name: string; } | never> {
-    const response: ApiResponse<{ id: string; name: string; }> = await fetch(`https://api.example.com/games/${gameId}`)
-        .then(res => res.json());
-    return handleApiResponse(response);
-}
+const transport = new (transports.DailyRotateFile)({
+    filename: path.join(logDir, '%DATE%-results.log'),
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
+    level: 'info'
+});
 
-// Example usage
-fetchGameData('12345')
-    .then(data => console.log(data))
-    .catch(error => console.error(error.message));
+const logger = createLogger({
+    level: 'info',
+    format: format.combine(
+        format.timestamp(),
+        format.json()
+    ),
+    transports: [
+        transport,
+        new transports.Console({
+            format: format.simple()
+        })
+    ]
+});
+
+export default logger;
