@@ -1,35 +1,32 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { createLogger, transports, format } from 'winston';
-import 'winston-daily-rotate-file';
-
-const logDir = path.join(__dirname, 'logs');
-
-if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir);
+export function generateRandomItem(items: string[]): string {
+    const randomIndex = Math.floor(Math.random() * items.length);
+    return items[randomIndex];
 }
 
-const transport = new (transports.DailyRotateFile)({
-    filename: path.join(logDir, '%DATE%-results.log'),
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '14d',
-    level: 'info'
-});
+export function calculateWinProbability(wins: number, totalGames: number): number {
+    if (totalGames === 0) return 0;
+    return parseFloat(((wins / totalGames) * 100).toFixed(2));
+}
 
-const logger = createLogger({
-    level: 'info',
-    format: format.combine(
-        format.timestamp(),
-        format.json()
-    ),
-    transports: [
-        transport,
-        new transports.Console({
-            format: format.simple()
-        })
-    ]
-});
+export function formatCurrency(amount: number, currencySymbol: string = '$'): string {
+    return `${currencySymbol}${amount.toFixed(2)}`;
+}
 
-export default logger;
+export function isValidAddress(address: string): boolean {
+    const addressRegex = /^[a-zA-Z0-9]{34}$/;
+    return addressRegex.test(address);
+}
+
+export function findPlayerById(players: { id: string; name: string }[], id: string) {
+    return players.find(player => player.id === id) || null;
+}
+
+export function sortItemsAlphabetically(items: string[]): string[] {
+    return items.slice().sort();
+}
+
+export function calculateCooldown(startTime: number, cooldownPeriod: number): number {
+    const currentTime = Date.now();
+    const cooldownEndTime = startTime + cooldownPeriod;
+    return Math.max(0, cooldownEndTime - currentTime);
+}
