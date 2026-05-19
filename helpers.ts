@@ -1,32 +1,32 @@
-export function generateRandomItem(items: string[]): string {
-    const randomIndex = Math.floor(Math.random() * items.length);
-    return items[randomIndex];
-}
-
-export function calculateWinProbability(wins: number, totalGames: number): number {
+export function calculateWinRate(wins: number, totalGames: number): number {
     if (totalGames === 0) return 0;
-    return parseFloat(((wins / totalGames) * 100).toFixed(2));
+    return (wins / totalGames) * 100;
 }
 
-export function formatCurrency(amount: number, currencySymbol: string = '$'): string {
-    return `${currencySymbol}${amount.toFixed(2)}`;
+export function getRandomElement<T>(array: T[]): T | undefined {
+    return array[Math.floor(Math.random() * array.length)];
 }
 
-export function isValidAddress(address: string): boolean {
-    const addressRegex = /^[a-zA-Z0-9]{34}$/;
-    return addressRegex.test(address);
+export function formatCurrency(amount: number): string {
+    return '$' + amount.toFixed(2);
 }
 
-export function findPlayerById(players: { id: string; name: string }[], id: string) {
-    return players.find(player => player.id === id) || null;
+export function generateUniqueId(): string {
+    return 'id-' + Math.random().toString(36).substr(2, 9);
 }
 
-export function sortItemsAlphabetically(items: string[]): string[] {
-    return items.slice().sort();
+export function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function calculateCooldown(startTime: number, cooldownPeriod: number): number {
-    const currentTime = Date.now();
-    const cooldownEndTime = startTime + cooldownPeriod;
-    return Math.max(0, cooldownEndTime - currentTime);
+export function shuffleArray<T>(array: T[]): T[] {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+export function isEqual<T>(a: T, b: T): boolean {
+    return JSON.stringify(a) === JSON.stringify(b);
 }
