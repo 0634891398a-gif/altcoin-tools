@@ -1,33 +1,33 @@
-export function shuffleArray<T>(array: T[]): T[] {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
+import fs from 'fs';
+import path from 'path';
+import winston from 'winston';
+import 'winston-daily-rotate-file';
+
+const logDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir);
 }
 
-export function randomElement<T>(array: T[]): T | undefined {
-    if (array.length === 0) return undefined;
-    const randomIndex = Math.floor(Math.random() * array.length);
-    return array[randomIndex];
-}
+const transport = new winston.transports.DailyRotateFile({
+    filename: path.join(logDir, '%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
+});
 
-export function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json()
+    ),
+    transports: [
+        transport,
+        new winston.transports.Console({
+            format: winston.format.simple(),
+        }),
+    ],
+});
 
-export function capitalizeFirstLetter(string: string): string {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-export function debounce(func: Function, wait: number): Function {
-    let timeout: NodeJS.Timeout;
-    return function executedFunction(...args: any[]) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
+export default logger;
