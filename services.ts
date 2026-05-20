@@ -1,29 +1,30 @@
-import axios from 'axios';
-import { GameData, ApiResponse } from './types';
+import axios, { AxiosError } from 'axios';
 
-const API_URL = 'https://api.altcoingaming.com/games';
-
-export class GameService {
-  private static cache: Map<string, GameData> = new Map();
-
-  public static async fetchGameData(gameId: string): Promise<GameData> {
-    if (this.cache.has(gameId)) {
-      return this.cache.get(gameId)!;
+async function retryRequest<T>(
+    requestFunction: () => Promise<T>,
+    retries: number = 3,
+    delay: number = 1000
+): Promise<T> {
+    let lastError: AxiosError | null = null;
+    for (let i = 0; i < retries; i++) {
+        try {
+            return await requestFunction();
+        } catch (error) {
+            lastError = error as AxiosError;
+            if (i < retries - 1) {
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2; // Exponential backoff
+            }
+        }
     }
-
-    const response: ApiResponse = await axios.get(`${API_URL}/${gameId}`);
-    const gameData: GameData = response.data;
-    this.cache.set(gameId, gameData);
-
-    return gameData;
-  }
-
-  public static clearCache(): void {
-    this.cache.clear();
-  }
+    throw lastError; // throw the last error if all retries fail
 }
 
-export const getGameList = async (): Promise<GameData[]> => {
-  const response: ApiResponse = await axios.get(API_URL);
-  return response.data;
-};
+async function fetchData(url: string): Promise<any> {
+    return retryRequest(async () => {
+        const response = await axios.get(url);
+        return response.data;
+    });
+}
+
+export { retryRequest, fetchData };
