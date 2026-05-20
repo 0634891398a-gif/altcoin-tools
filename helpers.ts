@@ -1,32 +1,18 @@
-export function calculateWinRate(wins: number, totalGames: number): number {
-    if (totalGames === 0) return 0;
-    return (wins / totalGames) * 100;
-}
-
-export function getRandomElement<T>(array: T[]): T | undefined {
-    return array[Math.floor(Math.random() * array.length)];
-}
-
-export function formatCurrency(amount: number): string {
-    return '$' + amount.toFixed(2);
-}
-
-export function generateUniqueId(): string {
-    return 'id-' + Math.random().toString(36).substr(2, 9);
-}
-
-export function delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-export function shuffleArray<T>(array: T[]): T[] {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+async function retryOperation<T>(operation: () => Promise<T>, retries: number = 3, delay: number = 1000): Promise<T> {
+    let lastError;
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const result = await operation();
+            return result;
+        } catch (error) {
+            lastError = error;
+            console.error(`Attempt ${attempt} failed:`, error);
+            if (attempt < retries) {
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
     }
-    return array;
+    throw lastError;
 }
 
-export function isEqual<T>(a: T, b: T): boolean {
-    return JSON.stringify(a) === JSON.stringify(b);
-}
+export { retryOperation };
