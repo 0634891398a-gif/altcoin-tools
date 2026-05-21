@@ -1,30 +1,40 @@
-import axios, { AxiosError } from 'axios';
+import fs from 'fs';
+import path from 'path';
+import winston from 'winston';
+import { format } from 'winston';
 
-async function retryRequest<T>(
-    requestFunction: () => Promise<T>,
-    retries: number = 3,
-    delay: number = 1000
-): Promise<T> {
-    let lastError: AxiosError | null = null;
-    for (let i = 0; i < retries; i++) {
-        try {
-            return await requestFunction();
-        } catch (error) {
-            lastError = error as AxiosError;
-            if (i < retries - 1) {
-                await new Promise(resolve => setTimeout(resolve, delay));
-                delay *= 2; // Exponential backoff
-            }
-        }
-    }
-    throw lastError; // throw the last error if all retries fail
+const logDir = 'logs';
+if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir);
 }
 
-async function fetchData(url: string): Promise<any> {
-    return retryRequest(async () => {
-        const response = await axios.get(url);
-        return response.data;
-    });
-}
+const maxSize = '5m'; // max size for log files
+const maxFiles = '10'; // max log files to keep
 
-export { retryRequest, fetchData };
+const logger = winston.createLogger({
+    level: 'info',
+    format: format.combine(
+        format.timestamp(),
+        format.json()
+    ),
+    transports: [
+        new winston.transports.File({
+            filename: path.join(logDir, 'error.log'),
+            level: 'error',
+            options: { flags: 'a' },
+            maxsize: maxSize,
+            maxFiles: maxFiles,
+        }),
+        new winston.transports.File({
+            filename: path.join(logDir, 'combined.log'),
+            options: { flags: 'a' },
+            maxsize: maxSize,
+            maxFiles: maxFiles,
+        }),
+        new winston.transports.Console({
+            format: format.simple(),
+        }),
+    ],
+});
+
+export default logger;
