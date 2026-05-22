@@ -1,40 +1,45 @@
-import fs from 'fs';
-import path from 'path';
-import winston from 'winston';
-import { format } from 'winston';
+/**
+ * GameService manages operations related to games.
+ */
+class GameService {
+    private games: Map<string, Game>;
 
-const logDir = 'logs';
-if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir);
+    constructor() {
+        this.games = new Map();
+    }
+
+    /**
+     * Adds a new game to the service.
+     * @param gameId - Unique identifier for the game.
+     * @param game - Game object to be added.
+     */
+    addGame(gameId: string, game: Game): void {
+        this.games.set(gameId, game);
+    }
+
+    /**
+     * Retrieves a game by its identifier.
+     * @param gameId - Unique identifier for the game.
+     * @returns Game | undefined - Returns the game or undefined if not found.
+     */
+    getGame(gameId: string): Game | undefined {
+        return this.games.get(gameId);
+    }
+
+    /**
+     * Lists all games available in the service.
+     * @returns Game[] - Array of all games.
+     */
+    listGames(): Game[] {
+        return Array.from(this.games.values());
+    }
 }
 
-const maxSize = '5m'; // max size for log files
-const maxFiles = '10'; // max log files to keep
+interface Game {
+    name: string;
+    genre: string;
+    releaseDate: Date;
+    developer: string;
+}
 
-const logger = winston.createLogger({
-    level: 'info',
-    format: format.combine(
-        format.timestamp(),
-        format.json()
-    ),
-    transports: [
-        new winston.transports.File({
-            filename: path.join(logDir, 'error.log'),
-            level: 'error',
-            options: { flags: 'a' },
-            maxsize: maxSize,
-            maxFiles: maxFiles,
-        }),
-        new winston.transports.File({
-            filename: path.join(logDir, 'combined.log'),
-            options: { flags: 'a' },
-            maxsize: maxSize,
-            maxFiles: maxFiles,
-        }),
-        new winston.transports.Console({
-            format: format.simple(),
-        }),
-    ],
-});
-
-export default logger;
+export default GameService;
