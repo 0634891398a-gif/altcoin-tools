@@ -1,51 +1,59 @@
 # altcoin-tools
 
-altcoin-tools is a powerful TypeScript library designed for developers who want to integrate cryptocurrency functionalities into their gaming applications. This toolkit simplifies the process of cryptocurrency transactions and wallet management, providing a seamless experience for users interacting with digital assets.
+altcoin-tools is a TypeScript library designed to simplify the integration of cryptocurrency functionalities into gaming applications. Whether you’re developing a blockchain-based game or incorporating cryptocurrency transactions, altcoin-tools provides the essential utilities to enhance your gaming experience.
 
 ## Features
 
-- **Multi-Blockchain Support:** Easily interact with popular altcoins like Ethereum, Binance Smart Chain, and others through a unified interface.
-- **Wallet Management:** Effortlessly create, import, and manage cryptocurrency wallets using secure cryptographic practices.
-- **Real-Time Price Fetching:** Retrieve real-time pricing data for various altcoins, helping players make informed decisions during gameplay.
-- **Transaction Handling:** Streamlined API methods for sending and receiving altcoins, complete with error handling and notifications.
+- **Wallet Management**: Seamlessly create, import, and manage cryptocurrency wallets with support for major altcoins.
+- **Transaction Handling**: Effortlessly facilitate transactions between wallets, including monitoring, confirmation, and error handling.
+- **Real-Time Price Tracking**: Access live price data of various altcoins using integrated APIs, allowing for dynamic in-game economies.
+- **Game Asset Tokenization**: Utilize ERC-721 and ERC-1155 standards for tokenizing in-game assets, enabling ownership and trade of unique items.
 
 ## Installation
 
-To install altcoin-tools in your project, run the following command:
+To get started with altcoin-tools, run the following command in your project directory:
 
 ```bash
 npm install altcoin-tools
 ```
 
-## Basic Usage
+Ensure that you have TypeScript installed in your environment. You can add TypeScript to your project with the following command if you haven't already:
 
-Here’s a quick example to showcase how to use the altcoin-tools library:
+```bash
+npm install typescript --save-dev
+```
+
+## Basic Usage Example
+
+Here’s how to create a wallet and check the balance using altcoin-tools:
 
 ```typescript
-import { Wallet, Transaction, PriceFetcher } from 'altcoin-tools';
+import { Wallet, Transaction } from 'altcoin-tools';
 
 // Create a new wallet
-const wallet = new Wallet('my-secure-password');
+const myWallet = new Wallet();
+console.log(`Wallet Address: ${myWallet.address}`);
 
-// Fetch the current price of Bitcoin
-const priceFetcher = new PriceFetcher();
-priceFetcher.getPrice('BTC').then(price => {
-    console.log(`Current Bitcoin Price: $${price}`);
+// Check balance
+myWallet.getBalance('altcoin-symbol').then(balance => {
+    console.log(`Balance for ${myWallet.address}: ${balance}`);
+}).catch(error => {
+    console.error(`Error fetching balance: ${error.message}`);
 });
 
-// Send a transaction
-const transaction = new Transaction(wallet);
-transaction.send('recipient-wallet-address', 0.01, 'BTC').then(response => {
-    console.log('Transaction successful:', response);
+// Create and send a transaction
+const tx = new Transaction(myWallet);
+tx.send('recipient-address', amount).then(receipt => {
+    console.log('Transaction successful:', receipt);
 }).catch(error => {
-    console.error('Transaction failed:', error);
+    console.error(`Transaction failed: ${error.message}`);
 });
 ```
 
-This example illustrates the creation of a wallet, fetching the current price of Bitcoin, and sending a transaction, all while keeping the code concise and easy to understand.
-
 ## License
 
-![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![MIT License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE) 
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+---
+
+altcoin-tools aims to empower developers in the gaming industry with robust tools for cryptocurrency integration, contributing to the future of gaming and blockchain technology.
