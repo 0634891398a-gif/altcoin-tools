@@ -1,1 +1,37 @@
-type GameItem = { id: number; name: string; value: number; type: string; }; type GameInventory = { items: GameItem[]; totalValue: () => number; addItem: (item: GameItem) => void; removeItem: (id: number) => boolean; getItem: (id: number) => GameItem | undefined; }; const createInventory = (): GameInventory => { const items: GameItem[] = []; return { items, totalValue: () => items.reduce((acc, item) => acc + item.value, 0), addItem: (item) => { items.push(item); }, removeItem: (id) => { const index = items.findIndex(item => item.id === id); if (index !== -1) { items.splice(index, 1); return true; } return false; }, getItem: (id) => items.find(item => item.id === id) }; }; export { createInventory, GameItem, GameInventory };
+import fs from 'fs';
+import path from 'path';
+import winston from 'winston';
+import 'winston-daily-rotate-file';
+
+const logDir = path.join(__dirname, 'logs');
+
+if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir);
+}
+
+const transport = new winston.transports.DailyRotateFile({
+    filename: path.join(logDir, 'application-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d'
+});
+
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.printf(({ timestamp, level, message }) => {
+            return `${timestamp} ${level}: ${message}`;
+        })
+    ),
+    transports: [transport]
+});
+
+export const logInfo = (message: string) => {
+    logger.info(message);
+};
+
+export const logError = (message: string) => {
+    logger.error(message);
+};
