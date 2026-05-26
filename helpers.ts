@@ -1,37 +1,34 @@
-import fs from 'fs';
-import path from 'path';
-import winston from 'winston';
-import 'winston-daily-rotate-file';
-
-const logDir = path.join(__dirname, 'logs');
-
-if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir);
+export function optimizedDataProcessor(data: any[]): any[] {
+    const cache = new Map();
+    return data.map(item => {
+        const key = item.id;
+        if (cache.has(key)) {
+            return cache.get(key);
+        }
+        const processedItem = complexCalculation(item);
+        cache.set(key, processedItem);
+        return processedItem;
+    });
 }
 
-const transport = new winston.transports.DailyRotateFile({
-    filename: path.join(logDir, 'application-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '14d'
-});
+function complexCalculation(item: any): any {
+    // Some CPU-intensive operation
+    return {
+        ...item,
+        processed: true,
+        timestamp: Date.now()
+    };
+}
 
-const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.printf(({ timestamp, level, message }) => {
-            return `${timestamp} ${level}: ${message}`;
-        })
-    ),
-    transports: [transport]
-});
+export function filterRecentItems(data: any[], days: number): any[] {
+    const cutoffDate = Date.now() - days * 24 * 60 * 60 * 1000;
+    return data.filter(item => item.timestamp > cutoffDate);
+}
 
-export const logInfo = (message: string) => {
-    logger.info(message);
-};
-
-export const logError = (message: string) => {
-    logger.error(message);
-};
+export function batchProcessItems(items: any[], batchSize: number): any[][] {
+    const batches = [];
+    for (let i = 0; i < items.length; i += batchSize) {
+        batches.push(items.slice(i, i + batchSize));
+    }
+    return batches;
+}
