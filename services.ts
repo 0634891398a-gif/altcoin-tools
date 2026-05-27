@@ -1,1 +1,43 @@
-type PlayerStats = { playerId: string; score: number; level: number; achievements: string[]; }; type GameData = { players: PlayerStats[]; gameId: string; startTime: Date; endTime: Date; }; export function calculateAverageScore(gameData: GameData): number { if (gameData.players.length === 0) return 0; const totalScore = gameData.players.reduce((sum, player) => sum + player.score, 0); return totalScore / gameData.players.length; } export function getTopPlayers(gameData: GameData, topN: number): PlayerStats[] { return gameData.players.sort((a, b) => b.score - a.score).slice(0, topN); } export function isPlayerInGame(gameData: GameData, playerId: string): boolean { return gameData.players.some(player => player.playerId === playerId); }
+// Import necessary libraries
+import { Game } from './types';
+
+/**
+ * Fetches the latest game data from the API.
+ *
+ * @param gameId - The unique identifier for the game.
+ * @returns A promise that resolves to the game data.
+ */
+export async function fetchGameData(gameId: string): Promise<Game> {
+    const response = await fetch(`https://api.example.com/games/${gameId}`);
+    if (!response.ok) {
+        throw new Error(`Error fetching game data: ${response.statusText}`);
+    }
+    const gameData: Game = await response.json();
+    return gameData;
+}
+
+/**
+ * Calculates the win rate for a given player.
+ *
+ * @param wins - The number of games won.
+ * @param totalGames - The total number of games played.
+ * @returns The win rate as a decimal.
+ */
+export function calculateWinRate(wins: number, totalGames: number): number {
+    if (totalGames === 0) return 0;
+    return parseFloat((wins / totalGames).toFixed(2));
+}
+
+/**
+ * Updates the game status based on the current score.
+ *
+ * @param currentScore - The current score of the game.
+ * @returns The updated game status string.
+ */
+export function updateGameStatus(currentScore: number): string {
+    if (currentScore < 0) return 'Invalid score';
+    if (currentScore === 0) return 'Game is starting';
+    if (currentScore < 50) return 'Early stage';
+    if (currentScore < 100) return 'Mid-game';
+    return 'Game over';
+}
