@@ -1,31 +1,32 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as winston from 'winston';
-import 'winston-daily-rotate-file';
-
-const logDir = path.join(__dirname, 'logs');
-
-if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir);
+/**
+ * Generates a random game id.
+ *
+ * @returns {string} A unique identifier for the game.
+ */
+function generateGameId(): string {
+    return 'game-' + Math.random().toString(36).substr(2, 9);
 }
 
-const transport = new winston.transports.DailyRotateFile({
-    filename: path.join(logDir, '%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    handleExceptions: true,
-    level: 'info',
-    maxSize: '20m',
-    maxFiles: '14d'
-});
+/**
+ * Calculates the score based on player actions.
+ *
+ * @param {number} baseScore - The initial score to modify.
+ * @param {number[]} actions - An array of actions that affect the score.
+ * @returns {number} The final calculated score.
+ */
+function calculateScore(baseScore: number, actions: number[]): number {
+    return actions.reduce((score, action) => score + action, baseScore);
+}
 
-const logger = winston.createLogger({
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-    ),
-    transports: [transport],
-    exitOnError: false
-});
+/**
+ * Formats game results into a readable string.
+ *
+ * @param {string} playerName - The name of the player.
+ * @param {number} score - The score achieved by the player.
+ * @returns {string} A formatted result string.
+ */
+function formatGameResult(playerName: string, score: number): string {
+    return `${playerName} scored ${score} points!`;
+}
 
-export default logger;
+export { generateGameId, calculateScore, formatGameResult };
