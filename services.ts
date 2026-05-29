@@ -1,32 +1,51 @@
-import { isNumeric, isValidGameId } from './utils';
+// Import necessary types and modules
+import { Player } from './types';
 
-interface GameData {
-    id: string;
-    score: number;
-}
+/**
+ * Represents a service that manages player actions.
+ * @class
+ */
+class PlayerService {
+    private players: Map<string, Player>;
 
-class GameService {
-    private games: GameData[] = [];
+    /**
+     * Creates an instance of PlayerService.
+     * Initializes a player map to track players.
+     */
+    constructor() {
+        this.players = new Map<string, Player>();
+    }
 
-    public processGameInput(input: any): void {
-        if (!this.validateInput(input)) {
-            console.error('Invalid input:', input);
-            return;
+    /**
+     * Registers a new player with their unique ID.
+     * @param id - The unique identifier of the player.
+     * @param playerData - The data of the player to register.
+     * @throws Will throw an error if the player ID already exists.
+     */
+    registerPlayer(id: string, playerData: Player): void {
+        if (this.players.has(id)) {
+            throw new Error('Player ID already exists.');
         }
-        const game: GameData = { id: input.id, score: input.score };
-        this.games.push(game);
-        console.log('Game processed:', game);
+        this.players.set(id, playerData);
     }
 
-    private validateInput(input: any): input is GameData {
-        return typeof input === 'object' && 
-               isValidGameId(input.id) && 
-               isNumeric(input.score);
+    /**
+     * Retrieves a player by ID.
+     * @param id - The unique identifier of the player.
+     * @returns The player object associated with the ID or undefined if not found.
+     */
+    getPlayer(id: string): Player | undefined {
+        return this.players.get(id);
+    }
+
+    /**
+     * Removes a player by their unique ID.
+     * @param id - The unique identifier of the player to remove.
+     * @returns True if the player was removed, otherwise false.
+     */
+    removePlayer(id: string): boolean {
+        return this.players.delete(id);
     }
 }
 
-const gameService = new GameService();
-gameService.processGameInput({ id: 'game123', score: 150 });
-gameService.processGameInput({ id: 'invalid-id', score: 100 });
-
-export default gameService;
+export default PlayerService;
