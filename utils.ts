@@ -1,32 +1,34 @@
-/**
- * Generates a random game id.
- *
- * @returns {string} A unique identifier for the game.
- */
-function generateGameId(): string {
-    return 'game-' + Math.random().toString(36).substr(2, 9);
+import * as fs from 'fs';
+import * as path from 'path';
+import { createLogger, transports, format } from 'winston';
+
+const logDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir);
 }
 
-/**
- * Calculates the score based on player actions.
- *
- * @param {number} baseScore - The initial score to modify.
- * @param {number[]} actions - An array of actions that affect the score.
- * @returns {number} The final calculated score.
- */
-function calculateScore(baseScore: number, actions: number[]): number {
-    return actions.reduce((score, action) => score + action, baseScore);
-}
+const rotateFileTransport = (filename: string) => {
+    return new transports.File({
+        filename: path.join(logDir, filename),
+        level: 'info',
+        format: format.combine(
+            format.timestamp(),
+            format.json()
+        ),
+        options: { flags: 'a+' },
+    });
+};
 
-/**
- * Formats game results into a readable string.
- *
- * @param {string} playerName - The name of the player.
- * @param {number} score - The score achieved by the player.
- * @returns {string} A formatted result string.
- */
-function formatGameResult(playerName: string, score: number): string {
-    return `${playerName} scored ${score} points!`;
-}
+const logger = createLogger({
+    level: 'info',
+    transports: [
+        // Log to console
+        new transports.Console({
+            format: format.simple(),
+        }),
+        // Log to file with rotation
+        rotateFileTransport('app.log'),
+    ],
+});
 
-export { generateGameId, calculateScore, formatGameResult };
+export default logger;
