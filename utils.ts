@@ -1,34 +1,32 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { createLogger, transports, format } from 'winston';
+import fs from 'fs';
+import path from 'path';
+import winston from 'winston';
 
 const logDir = path.join(__dirname, 'logs');
+
 if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir);
 }
 
-const rotateFileTransport = (filename: string) => {
-    return new transports.File({
-        filename: path.join(logDir, filename),
-        level: 'info',
-        format: format.combine(
-            format.timestamp(),
-            format.json()
-        ),
-        options: { flags: 'a+' },
-    });
-};
-
-const logger = createLogger({
-    level: 'info',
-    transports: [
-        // Log to console
-        new transports.Console({
-            format: format.simple(),
-        }),
-        // Log to file with rotation
-        rotateFileTransport('app.log'),
-    ],
+const transport = new winston.transports.File({
+    filename: path.join(logDir, 'app-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
 });
 
-export default logger;
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.printf(({ timestamp, level, message }) => {
+            return `${timestamp} [${level}]: ${message}`;
+        })
+    ),
+    transports: [transport],
+});
+
+export const logInfo = (message: string) => logger.info(message);
+export const logError = (message: string) => logger.error(message);
+export const logWarning = (message: string) => logger.warn(message);
