@@ -1,32 +1,37 @@
-import fs from 'fs';
-import path from 'path';
-import winston from 'winston';
-
-const logDir = path.join(__dirname, 'logs');
-
-if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir);
+export function generateRandomId(length: number = 8): string {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        result += characters[randomIndex];
+    }
+    return result;
 }
 
-const transport = new winston.transports.File({
-    filename: path.join(logDir, 'app-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '14d',
-});
+export function debounce(func: (...args: any[]) => void, delay: number): (...args: any[]) => void {
+    let timeoutId: NodeJS.Timeout;
+    return function(this: unknown, ...args: any[]) {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+        timeoutId = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    };
+}
 
-const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.printf(({ timestamp, level, message }) => {
-            return `${timestamp} [${level}]: ${message}`;
-        })
-    ),
-    transports: [transport],
-});
+export function formatCurrency(value: number, currency: string = 'USD'): string {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
+}
 
-export const logInfo = (message: string) => logger.info(message);
-export const logError = (message: string) => logger.error(message);
-export const logWarning = (message: string) => logger.warn(message);
+export function shuffleArray<T>(array: T[]): T[] {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+export function isEmptyObject(obj: object): boolean {
+    return Object.keys(obj).length === 0;
+}
