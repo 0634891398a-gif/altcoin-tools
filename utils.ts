@@ -1,29 +1,44 @@
-import { createLogger, format, transports } from 'winston';
-import { printf } from 'winston';
+export function debounce<T extends (...args: any[]) => any>(func: T, wait: number) {
+    let timeout: NodeJS.Timeout | null;
+    return function (...args: Parameters<T>): void {
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+        timeout = setTimeout(() => func(...args), wait);
+    };
+}
 
-const logFormat = printf(({ level, message, timestamp }) => {
-    return `${timestamp} ${level}: ${message}`;
-});
+export function throttle<T extends (...args: any[]) => any>(func: T, limit: number) {
+    let lastFunc: NodeJS.Timeout | null;
+    let lastRan: number;
+    return function (...args: Parameters<T>): void {
+        const context = this;
+        if (!lastRan) {
+            func.apply(context, args);
+            lastRan = Date.now();
+        }
+        if (lastFunc) {
+            clearTimeout(lastFunc);
+        }
+        lastFunc = setTimeout(function () {
+            if (Date.now() - lastRan >= limit) {
+                func.apply(context, args);
+                lastRan = Date.now();
+            }
+        }, limit - (Date.now() - lastRan));
+    };
+}
 
-const transportOptions = {
-    filename: 'combined.log',
-    dirname: 'logs',
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '14d',
-};
-
-const logger = createLogger({
-    level: 'info',
-    format: format.combine(
-        format.timestamp(),
-        logFormat
-    ),
-    transports: [
-        new transports.File(transportOptions),
-        new transports.Console(),
-    ],
-});
-
-export default logger;
+export function memoize<T extends (...args: any[]) => any>(func: T): (...args: Parameters<T>) => ReturnType<T> {
+    const cache: {[key: string]: ReturnType<T>} = {};
+    return function (...args: Parameters<T>): ReturnType<T> {
+        const key = JSON.stringify(args);
+        if (cache[key]) {
+            return cache[key];
+        } else {
+            const result = func(...args);
+            cache[key] = result;
+            return result;
+        }
+    };
+}
