@@ -1,27 +1,27 @@
-import axios from 'axios';
+import { createLogger, transport, format } from 'winston';
+import 'winston-daily-rotate-file';
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000;
+const transport = new (require('winston-daily-rotate-file'))({
+  filename: 'logs/%DATE%-results.log',
+  datePattern: 'YYYY-MM-DD',
+  zippedArchive: true,
+  maxSize: '20m',
+  maxFiles: '14d',
+  format: format.combine(
+    format.timestamp(),
+    format.printf(({ timestamp, level, message }) => {
+      return `${timestamp} ${level}: ${message}`;
+    })
+  )
+});
 
-async function fetchWithRetry(url: string, options?: object): Promise<any> {
-    let attempts = 0;
-    while (attempts < MAX_RETRIES) {
-        try {
-            const response = await axios.get(url, options);
-            return response.data;
-        } catch (error) {
-            attempts += 1;
-            if (attempts === MAX_RETRIES) {
-                throw new Error(`Failed to fetch after ${MAX_RETRIES} attempts: ${error}`);
-            }
-            console.warn(`Attempt ${attempts} failed. Retrying in ${RETRY_DELAY}ms...`);
-            await delay(RETRY_DELAY);
-        }
-    }
-}
+const logger = createLogger({
+  level: 'info',
+  transports: [
+    transport
+  ]
+});
 
-function delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+logger.info('Logger initialized with rotation setup.');
 
-export { fetchWithRetry };
+export default logger;
