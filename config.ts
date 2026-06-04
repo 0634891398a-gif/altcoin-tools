@@ -1,25 +1,21 @@
-import fs from 'fs';
-import path from 'path';
-
-interface Config {
-  apiUrl: string;
-  port: number;
-  debug: boolean;
-}
-
-const defaultConfig: Config = {
-  apiUrl: 'http://localhost:3000',
-  port: 3000,
-  debug: false,
+export const CONFIG = {
+  MAX_PLAYERS: 100,
+  GAME_TIMEOUT: 300,
+  SERVER_URL: 'https://api.altcoin-games.com',
+  RECONNECT_DELAY: 5000,
+  LOG_LEVEL: 'info',
+  API_VERSION: 'v1',
 };
 
-const loadConfig = (filename: string): Config => {
-  const configPath = path.resolve(__dirname, filename);
-  if (!fs.existsSync(configPath)) {
-    return defaultConfig;
+export const optimizePerformance = (config: typeof CONFIG) => {
+  const optimizedConfig = { ...config };
+
+  if (optimizedConfig.MAX_PLAYERS > 50) {
+    optimizedConfig.GAME_TIMEOUT = 200;
   }
-  const fileConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-  return { ...defaultConfig, ...fileConfig };
+
+  return optimizedConfig;
 };
 
-export const config = loadConfig('config.json');
+const optimizedConfig = optimizePerformance(CONFIG);
+console.log('Optimized Configuration:', optimizedConfig);
