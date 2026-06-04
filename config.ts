@@ -1,21 +1,26 @@
-export const CONFIG = {
-  MAX_PLAYERS: 100,
-  GAME_TIMEOUT: 300,
-  SERVER_URL: 'https://api.altcoin-games.com',
-  RECONNECT_DELAY: 5000,
-  LOG_LEVEL: 'info',
-  API_VERSION: 'v1',
-};
+import { createLogger, format, transports } from 'winston';
+import { rotateFile } from 'winston-multi-transport-rotation';
 
-export const optimizePerformance = (config: typeof CONFIG) => {
-  const optimizedConfig = { ...config };
+const logFormat = format.printf(({ timestamp, level, message }) => {
+    return `${timestamp} ${level}: ${message}`;
+});
 
-  if (optimizedConfig.MAX_PLAYERS > 50) {
-    optimizedConfig.GAME_TIMEOUT = 200;
-  }
+const logger = createLogger({
+    level: 'info',
+    format: format.combine(
+        format.timestamp(),
+        logFormat
+    ),
+    transports: [
+        new transports.Console(),
+        rotateFile({
+            filename: 'logs/app-%DATE%.log',
+            datePattern: 'YYYY-MM-DD',
+            zippedArchive: true,
+            maxSize: '20m',
+            maxFiles: '14d'
+        })
+    ]
+});
 
-  return optimizedConfig;
-};
-
-const optimizedConfig = optimizePerformance(CONFIG);
-console.log('Optimized Configuration:', optimizedConfig);
+export default logger;
