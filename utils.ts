@@ -1,38 +1,29 @@
-/**
- * Generates a random game ID.
- * @returns {string} A unique identifier for the game.
- */
-function generateGameId(): string {
-    return 'game-' + Math.random().toString(36).substr(2, 9);
+function isNumeric(value: any): value is number {
+    return !isNaN(value) && typeof value === 'number';
 }
 
-/**
- * Formats a score for display.
- * @param {number} score - The raw score to format.
- * @returns {string} The formatted score with commas.
- */
-function formatScore(score: number): string {
-    return score.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+function randomInteger(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-/**
- * Calculates the win rate based on wins and total matches.
- * @param {number} wins - The number of wins.
- * @param {number} totalMatches - The total number of matches played.
- * @returns {number} The win rate as a percentage.
- */
-function calculateWinRate(wins: number, totalMatches: number): number {
-    if (totalMatches === 0) return 0;
-    return Math.round((wins / totalMatches) * 100);
+function shuffleArray<T>(array: T[]): T[] {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }
 
-/**
- * Checks if a player qualifies for a bonus.
- * @param {number} score - The player's score.
- * @returns {boolean} True if qualified for a bonus, false otherwise.
- */
-function qualifiesForBonus(score: number): boolean {
-    return score > 1000;
+function debounce<F extends (...args: any[]) => void>(func: F, delay: number): (...args: Parameters<F>) => void {
+    let timeoutId: NodeJS.Timeout;
+    return (...args: Parameters<F>): void => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func(...args), delay);
+    };
 }
 
-export { generateGameId, formatScore, calculateWinRate, qualifiesForBonus };
+function getRandomElement<T>(array: T[]): T | undefined {
+    return array[randomInteger(0, array.length - 1)];
+}
+
+export { isNumeric, randomInteger, shuffleArray, debounce, getRandomElement };
