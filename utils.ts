@@ -1,29 +1,27 @@
-function isNumeric(value: any): value is number {
-    return !isNaN(value) && typeof value === 'number';
-}
+const MAX_RETRIES = 3;
+const BACKOFF_MULTIPLIER = 300;
 
-function randomInteger(min: number, max: number): number {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function shuffleArray<T>(array: T[]): T[] {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+async function fetchWithRetry(url: string, options: RequestInit = {}): Promise<Response> {
+    let attempts = 0;
+    while (attempts < MAX_RETRIES) {
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                throw new Error(`Network error: ${response.status}`);
+            }
+            return response;
+        } catch (error) {
+            attempts++;
+            if (attempts < MAX_RETRIES) {
+                const backoffTime = BACKOFF_MULTIPLIER * Math.pow(2, attempts);
+                console.log(`Retrying... Attempt ${attempts}. Waiting ${backoffTime} ms`);
+                await new Promise(resolve => setTimeout(resolve, backoffTime));
+            } else {
+                console.error('Max retry attempts reached', error);
+                throw error;
+            }
+        }
     }
-    return array;
 }
 
-function debounce<F extends (...args: any[]) => void>(func: F, delay: number): (...args: Parameters<F>) => void {
-    let timeoutId: NodeJS.Timeout;
-    return (...args: Parameters<F>): void => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => func(...args), delay);
-    };
-}
-
-function getRandomElement<T>(array: T[]): T | undefined {
-    return array[randomInteger(0, array.length - 1)];
-}
-
-export { isNumeric, randomInteger, shuffleArray, debounce, getRandomElement };
+export { fetchWithRetry };
