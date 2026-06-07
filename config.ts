@@ -1,26 +1,28 @@
-import { createLogger, format, transports } from 'winston';
-import { rotateFile } from 'winston-multi-transport-rotation';
+import fs from 'fs';
+import path from 'path';
 
-const logFormat = format.printf(({ timestamp, level, message }) => {
-    return `${timestamp} ${level}: ${message}`;
-});
+interface Config {
+    apiUrl: string;
+    retryAttempts: number;
+    enableLogging: boolean;
+}
 
-const logger = createLogger({
-    level: 'info',
-    format: format.combine(
-        format.timestamp(),
-        logFormat
-    ),
-    transports: [
-        new transports.Console(),
-        rotateFile({
-            filename: 'logs/app-%DATE%.log',
-            datePattern: 'YYYY-MM-DD',
-            zippedArchive: true,
-            maxSize: '20m',
-            maxFiles: '14d'
-        })
-    ]
-});
+const defaultConfig: Config = {
+    apiUrl: 'https://api.example.com',
+    retryAttempts: 3,
+    enableLogging: true,
+};
 
-export default logger;
+const loadConfig = (configPath: string): Config => {
+    try {
+        const fullPath = path.resolve(configPath);
+        const configFile = fs.readFileSync(fullPath, 'utf8');
+        const userConfig = JSON.parse(configFile);
+        return { ...defaultConfig, ...userConfig };
+    } catch (error) {
+        console.error('Failed to load config:', error);
+        return defaultConfig;
+    }
+};
+
+export { loadConfig, defaultConfig };
