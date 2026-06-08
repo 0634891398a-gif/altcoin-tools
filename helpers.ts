@@ -1,42 +1,34 @@
-export function memoize<T extends (...args: any[]) => any>(fn: T): T {
-    const cache: { [key: string]: ReturnType<T> } = {};
-    return function (...args: any[]): ReturnType<T> {
-        const key = JSON.stringify(args);
-        if (cache[key]) {
-            return cache[key];
-        }
-        const result = fn(...args);
-        cache[key] = result;
-        return result;
-    } as T;
+import fs from 'fs';
+import path from 'path';
+import winston from 'winston';
+import { format } from 'winston';
+
+const logDirectory = path.join(__dirname, 'logs');
+if (!fs.existsSync(logDirectory)) {
+    fs.mkdirSync(logDirectory);
 }
 
-export function throttle<T extends (...args: any[]) => void>(func: T, limit: number): T {
-    let lastFunc: ReturnType<typeof setTimeout>;
-    let lastRan: number;
+const transport = new (winston.transports.File)({
+    filename: path.join(logDirectory, 'application-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
+});
 
-    return function (...args: any[]) {
-        const context = this;
-        if (!lastRan) {
-            func.apply(context, args);
-            lastRan = Date.now();
-        } else {
-            clearTimeout(lastFunc);
-            lastFunc = setTimeout(function () {
-                if ((Date.now() - lastRan) >= limit) {
-                    func.apply(context, args);
-                    lastRan = Date.now();
-                }
-            }, limit - (Date.now() - lastRan));
-        }
-    } as T;
-}
+const logger = winston.createLogger({
+    level: 'info',
+    format: format.combine(
+        format.timestamp(),
+        format.json()
+    ),
+    transports: [
+        transport,
+        new winston.transports.Console({
+            format: format.simple(),
+        }),
+    ],
+});
 
-export function debounce<T extends (...args: any[]) => void>(func: T, delay: number): T {
-    let timeoutId: ReturnType<typeof setTimeout>;
-    return function (...args: any[]) {
-        const context = this;
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => func.apply(context, args), delay);
-    } as T;
-}
+export const logInfo = (message: string) => { logger.info(message); };
+export const logError = (message: string) => { logger.error(message); };
