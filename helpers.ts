@@ -1,34 +1,46 @@
-import fs from 'fs';
-import path from 'path';
-import winston from 'winston';
-import { format } from 'winston';
-
-const logDirectory = path.join(__dirname, 'logs');
-if (!fs.existsSync(logDirectory)) {
-    fs.mkdirSync(logDirectory);
+export function safeParseJson<T>(jsonString: string): T | null {
+    try {
+        return JSON.parse(jsonString) as T;
+    } catch (error) {
+        console.error('JSON parsing error:', error);
+        return null;
+    }
 }
 
-const transport = new (winston.transports.File)({
-    filename: path.join(logDirectory, 'application-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '14d',
-});
+export function assertDefined<T>(value: T | undefined, message: string): T {
+    if (value === undefined) {
+        throw new Error(message);
+    }
+    return value;
+}
 
-const logger = winston.createLogger({
-    level: 'info',
-    format: format.combine(
-        format.timestamp(),
-        format.json()
-    ),
-    transports: [
-        transport,
-        new winston.transports.Console({
-            format: format.simple(),
-        }),
-    ],
-});
+export function validateNumber(value: any, min: number, max: number): number {
+    if (typeof value !== 'number') {
+        throw new TypeError(`Expected a number, received ${typeof value}`);
+    }
+    if (value < min || value > max) {
+        throw new RangeError(`Value ${value} out of range (${min}-${max})`);
+    }
+    return value;
+}
 
-export const logInfo = (message: string) => { logger.info(message); };
-export const logError = (message: string) => { logger.error(message); };
+export function handleAsyncError<T>(asyncFunc: () => Promise<T>): Promise<T | null> {
+    return asyncFunc().catch(error => {
+        console.error('Async function error:', error);
+        return null;
+    });
+}
+
+export function retry<T>(func: () => T, retries: number): T | null {
+    let attempts = 0;
+    while (attempts < retries) {
+        try {
+            return func();
+        } catch (error) {
+            attempts++;
+            console.warn(`Retrying ${attempts}/${retries} due to error:`, error);
+        }
+    }
+    console.error('Max retries reached');
+    return null;
+}
