@@ -1,1 +1,39 @@
-const DEFAULT_CONFIG = { apiUrl: 'https://api.altcoin-tools.com', timeout: 5000, retries: 3 };  const ENV_CONFIG = { development: { apiUrl: 'https://dev.api.altcoin-tools.com', timeout: 10000 }, production: { apiUrl: 'https://api.altcoin-tools.com', timeout: 5000 } };  type Config = typeof DEFAULT_CONFIG & { env?: keyof typeof ENV_CONFIG };  const config: Config = { ...DEFAULT_CONFIG, ...ENV_CONFIG[process.env.NODE_ENV || 'production'] };  export default config;
+export interface GameConfig {
+    gameName: string;
+    maxPlayers: number;
+    initialResources: ResourceConfig;
+    rules: GameRules;
+}
+
+export interface ResourceConfig {
+    gold: number;
+    silver: number;
+    gems: number;
+}
+
+export interface GameRules {
+    timeLimit: number;
+    pointsToWin: number;
+}
+
+export const defaultConfig: GameConfig = {
+    gameName: 'CryptoQuest',
+    maxPlayers: 10,
+    initialResources: {
+        gold: 100,
+        silver: 50,
+        gems: 10
+    },
+    rules: {
+        timeLimit: 3600,
+        pointsToWin: 100
+    }
+};
+
+export function getConfig(): GameConfig {
+    return { ...defaultConfig };
+}
+
+export function updateConfig(newConfig: Partial<GameConfig>): GameConfig {
+    return { ...defaultConfig, ...newConfig };
+}
