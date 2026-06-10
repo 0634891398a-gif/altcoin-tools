@@ -1,1 +1,18 @@
-export function shuffleArray<T>(array: T[]): T[] {  const shuffled = [...array];  for (let i = shuffled.length - 1; i > 0; i--) {    const j = Math.floor(Math.random() * (i + 1));    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];  }  return shuffled;}export function debounce<T>(func: (...args: any[]) => T, delay: number) {  let timeoutId: NodeJS.Timeout;  return function(...args: any[]) {    if (timeoutId) {      clearTimeout(timeoutId);    }    timeoutId = setTimeout(() => {      func(...args);    }, delay);  };}export function generateRandomId(length: number = 10): string {  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';  let result = '';  for (let i = 0; i < length; i++) {    const randomIndex = Math.floor(Math.random() * charset.length);    result += charset[randomIndex];  }  return result;}
+export async function retry<T>(operation: () => Promise<T>, attempts: number, delay: number): Promise<T> {
+    let lastError;
+    for (let i = 0; i < attempts; i++) {
+        try {
+            return await operation();
+        } catch (error) {
+            lastError = error;
+            if (i < attempts - 1) {
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+    }
+    throw lastError;
+}
+
+export function fetchWithRetry(url: string, options: RequestInit, attempts = 3, delay = 1000): Promise<Response> {
+    return retry(() => fetch(url, options), attempts, delay);
+}
