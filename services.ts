@@ -1,27 +1,36 @@
-import { createLogger, transport, format } from 'winston';
-import 'winston-daily-rotate-file';
+import { GameInput } from './types';
 
-const transport = new (require('winston-daily-rotate-file'))({
-  filename: 'logs/%DATE%-results.log',
-  datePattern: 'YYYY-MM-DD',
-  zippedArchive: true,
-  maxSize: '20m',
-  maxFiles: '14d',
-  format: format.combine(
-    format.timestamp(),
-    format.printf(({ timestamp, level, message }) => {
-      return `${timestamp} ${level}: ${message}`;
-    })
-  )
-});
+const VALID_INPUT_KEYS = ['move', 'attack', 'defend'];
 
-const logger = createLogger({
-  level: 'info',
-  transports: [
-    transport
-  ]
-});
+function isValidInput(input: GameInput): boolean {
+    return typeof input === 'object' && 
+           input !== null && 
+           VALID_INPUT_KEYS.includes(input.action) && 
+           typeof input.value === 'number';
+}
 
-logger.info('Logger initialized with rotation setup.');
+function processGameInputs(inputs: GameInput[]): void {
+    inputs.forEach(input => {
+        if (!isValidInput(input)) {
+            console.error('Invalid input:', input);
+            return;
+        }
+        handleInput(input);
+    });
+}
 
-export default logger;
+function handleInput(input: GameInput): void {
+    switch (input.action) {
+        case 'move':
+            console.log(`Moving to position: ${input.value}`);
+            break;
+        case 'attack':
+            console.log(`Attacking with strength: ${input.value}`);
+            break;
+        case 'defend':
+            console.log(`Defending with power: ${input.value}`);
+            break;
+    }
+}
+
+export { processGameInputs };
