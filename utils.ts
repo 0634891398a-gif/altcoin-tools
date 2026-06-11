@@ -1,29 +1,44 @@
-/**
- * Generates a random game item ID.
- * @returns {string} A unique item ID in the format 'ITEM-{number}'.
- */
-function generateItemId(): string {
-    return `ITEM-${Math.floor(Math.random() * 10000)}`;
-}
+import fs from 'fs';
+import winston from 'winston';
+import { format } from 'winston';
+import rotate from 'winston-daily-rotate-file';
 
-/**
- * Calculates the player score based on their performance in a game.
- * @param {number} kills - The number of kills the player has.
- * @param {number} deaths - The number of deaths the player has.
- * @param {number} assists - The number of assists the player has.
- * @returns {number} The calculated score.
- */
-function calculatePlayerScore(kills: number, deaths: number, assists: number): number {
-    return (kills * 3) + (assists * 2) - (deaths * 1);
-}
+const logTransport = new rotate({
+  filename: 'logs/%DATE%-results.log',
+  datePattern: 'YYYY-MM-DD',
+  zippedArchive: true,
+  pool: 1000,
+  maxSize: '20m',
+  maxFiles: '14d',
+  format: format.combine(
+    format.timestamp(),
+    format.json(),
+  ),
+});
 
-/**
- * Formats a player's name for display in the game.
- * @param {string} name - The player's name.
- * @returns {string} The formatted name.
- */
-function formatPlayerName(name: string): string {
-    return name.trim().toUpperCase();
-}
+const logger = winston.createLogger({
+  level: 'info',
+  transports: [
+    logTransport,
+    new winston.transports.Console({
+      format: format.combine(
+        format.colorize(),
+        format.simple(),
+      ),
+    }),
+  ],
+});
 
-export { generateItemId, calculatePlayerScore, formatPlayerName };
+export const logInfo = (message: string) => {
+  logger.info(message);
+};
+
+export const logError = (message: string) => {
+  logger.error(message);
+};
+
+export const logDebug = (message: string) => {
+  logger.debug(message);
+};
+
+export default logger;
