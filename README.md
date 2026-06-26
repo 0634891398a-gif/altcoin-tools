@@ -1,58 +1,56 @@
 # altcoin-tools
 
-altcoin-tools is a powerful TypeScript library designed to facilitate seamless integration of altcoin transactions and management within gaming applications. Harnessing the power of blockchain technology, this toolkit simplifies the creation and handling of in-game currencies that leverage altcoins.
+altcoin-tools is a powerful library designed for game developers to seamlessly integrate blockchain technology into their projects. Built with TypeScript, this toolkit simplifies interactions with various altcoins, enabling secure transactions and asset management in gaming environments.
 
 ## Features
-- **Multi-Coin Support**: Easily manage various altcoins such as Litecoin, Ripple, and others, enabling diverse in-game economies.
-- **Transaction Tracking**: Implement efficient systems to track player transactions, providing transparency and engagement.
-- **Wallet Integration**: Simplify wallet management with built-in tools for creating, securing, and modifying user wallets.
-- **Game Analytics**: Gain insights with built-in analytics capabilities, helping you understand player behaviors and transaction patterns.
+
+- **Multi-Currency Support**: Effortlessly handle multiple altcoins, making your game versatile for a global audience.
+- **Secure Transaction Management**: Utilize robust cryptographic methods to ensure safe and secure in-game transactions.
+- **Asset Tokenization**: Easily transform game assets into tradable tokens, allowing players to truly own their in-game items.
+- **Real-Time Analytics**: Access vital transaction statistics and trends to enhance game economics and player engagement.
 
 ## Installation
 
-To get started with altcoin-tools, follow these steps:
-
-1. Ensure you have Node.js installed (version 14 or above).
-2. Use npm or yarn to install the package:
+To get started with altcoin-tools, first ensure you have Node.js and npm installed. Then, run the following command to include the library in your project:
 
 ```bash
 npm install altcoin-tools
 ```
 
-or
+## Basic Usage Example
 
-```bash
-yarn add altcoin-tools
-```
-
-## Basic Usage
-
-Here's a quick example to illustrate how to use altcoin-tools in your gaming application:
+Below is a simple example demonstrating how to leverage altcoin-tools to create a new wallet and perform a transaction:
 
 ```typescript
-import { Wallet, Transaction, AltcoinManager } from 'altcoin-tools';
+import { Wallet, Transaction } from 'altcoin-tools';
 
 // Create a new wallet
-const userWallet = Wallet.create('user@example.com', 'securePassword');
+const myWallet = new Wallet('MyGameWallet');
 
-// Initialize the altcoin manager
-const altcoinManager = new AltcoinManager(userWallet);
+// Generate a new address
+const address = myWallet.generateAddress();
+console.log(`New Wallet Address: ${address}`);
 
-// Create a transaction
-const transaction = new Transaction(userWallet, 'recipientAddress', 0.1);
-altcoinManager.processTransaction(transaction)
-    .then(response => {
-        console.log('Transaction successful!', response);
-    })
-    .catch(error => {
-        console.error('Transaction failed:', error);
-    });
+// Create a new transaction
+const transaction = new Transaction({
+  from: address,
+  to: 'recipientAddress',
+  amount: 0.5,
+  currency: 'ETH'
+});
+
+// Send the transaction
+transaction.send()
+  .then(response => {
+    console.log(`Transaction Successful: ${response.transactionId}`);
+  })
+  .catch(error => {
+    console.error(`Transaction Failed: ${error.message}`);
+  });
 ```
-
-For more detailed usage and advanced configurations, please refer to our [documentation](https://github.com/Developer/altcoin-tools/wiki).
 
 ## License
 
-![MIT License](https://img.shields.io/badge/license-MIT-green) 
+![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
