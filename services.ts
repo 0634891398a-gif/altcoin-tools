@@ -1,36 +1,32 @@
-import { GameInput } from './types';
+import { User, Game } from './types';
 
-const VALID_INPUT_KEYS = ['move', 'attack', 'defend'];
-
-function isValidInput(input: GameInput): boolean {
-    return typeof input === 'object' && 
-           input !== null && 
-           VALID_INPUT_KEYS.includes(input.action) && 
-           typeof input.value === 'number';
-}
-
-function processGameInputs(inputs: GameInput[]): void {
-    inputs.forEach(input => {
-        if (!isValidInput(input)) {
-            console.error('Invalid input:', input);
-            return;
+export class GameService {
+    private users: User[] = [];
+    
+    constructor() {}
+    
+    public addUser(user: User): void {
+        if (!this.isUserExists(user.id)) {
+            this.users.push(user);
         }
-        handleInput(input);
-    });
-}
-
-function handleInput(input: GameInput): void {
-    switch (input.action) {
-        case 'move':
-            console.log(`Moving to position: ${input.value}`);
-            break;
-        case 'attack':
-            console.log(`Attacking with strength: ${input.value}`);
-            break;
-        case 'defend':
-            console.log(`Defending with power: ${input.value}`);
-            break;
+    }
+    
+    public removeUser(userId: string): void {
+        this.users = this.users.filter(user => user.id !== userId);
+    }
+    
+    public getUser(userId: string): User | undefined {
+        return this.users.find(user => user.id === userId);
+    }
+    
+    public getAllUsers(): User[] {
+        return this.users;
+    }
+    
+    private isUserExists(userId: string): boolean {
+        return this.users.some(user => user.id === userId);
     }
 }
 
-export { processGameInputs };
+const gameService = new GameService();
+export default gameService;
