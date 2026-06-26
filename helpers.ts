@@ -1,46 +1,33 @@
-export function safeParseJson<T>(jsonString: string): T | null {
-    try {
-        return JSON.parse(jsonString) as T;
-    } catch (error) {
-        console.error('JSON parsing error:', error);
-        return null;
+export function generateRandomId(length: number = 10): string {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
     }
+    return result;
 }
 
-export function assertDefined<T>(value: T | undefined, message: string): T {
-    if (value === undefined) {
-        throw new Error(message);
-    }
-    return value;
+export function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function validateNumber(value: any, min: number, max: number): number {
-    if (typeof value !== 'number') {
-        throw new TypeError(`Expected a number, received ${typeof value}`);
-    }
-    if (value < min || value > max) {
-        throw new RangeError(`Value ${value} out of range (${min}-${max})`);
-    }
-    return value;
+export function formatCurrency(amount: number, currency: string = 'USD'): string {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 }
 
-export function handleAsyncError<T>(asyncFunc: () => Promise<T>): Promise<T | null> {
-    return asyncFunc().catch(error => {
-        console.error('Async function error:', error);
-        return null;
-    });
+export function shuffleArray<T>(array: T[]): T[] {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }
 
-export function retry<T>(func: () => T, retries: number): T | null {
-    let attempts = 0;
-    while (attempts < retries) {
-        try {
-            return func();
-        } catch (error) {
-            attempts++;
-            console.warn(`Retrying ${attempts}/${retries} due to error:`, error);
-        }
-    }
-    console.error('Max retries reached');
-    return null;
+export function validateEmail(email: string): boolean {
+    const regex = /^[\w-\.]+@[\w-]+\.[a-zA-Z]{2,5}$/;
+    return regex.test(email);
+}
+
+export function deepClone<T>(obj: T): T {
+    return JSON.parse(JSON.stringify(obj));
 }
