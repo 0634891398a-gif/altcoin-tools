@@ -1,33 +1,40 @@
-export function generateRandomId(length: number = 10): string {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * characters.length));
+// Utility types for possible errors in our application
+export type ErrorCode = 'NOT_FOUND' | 'INVALID_INPUT' | 'UNAUTHORIZED' | 'SERVER_ERROR';
+
+export interface CustomError {
+    code: ErrorCode;
+    message: string;
+}
+
+export function handleError(error: unknown): CustomError {
+    if (error instanceof Error) {
+        const statusCode = determineStatusCode(error);
+        const errorCode = mapStatusCodeToErrorCode(statusCode);
+        return {
+            code: errorCode,
+            message: error.message,
+        };
     }
-    return result;
+    return {
+        code: 'SERVER_ERROR',
+        message: 'An unknown error occurred',
+    };
 }
 
-export function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+function determineStatusCode(error: Error): number {
+    // Implement logic to determine status code
+    if (error.message.includes('not found')) return 404;
+    if (error.message.includes('unauthorized')) return 401;
+    return 500;
 }
 
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
-}
-
-export function shuffleArray<T>(array: T[]): T[] {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+function mapStatusCodeToErrorCode(statusCode: number): ErrorCode {
+    switch (statusCode) {
+        case 404:
+            return 'NOT_FOUND';
+        case 401:
+            return 'UNAUTHORIZED';
+        default:
+            return 'SERVER_ERROR';
     }
-    return array;
-}
-
-export function validateEmail(email: string): boolean {
-    const regex = /^[\w-\.]+@[\w-]+\.[a-zA-Z]{2,5}$/;
-    return regex.test(email);
-}
-
-export function deepClone<T>(obj: T): T {
-    return JSON.parse(JSON.stringify(obj));
 }
