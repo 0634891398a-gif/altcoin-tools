@@ -1,44 +1,25 @@
-import fs from 'fs';
-import winston from 'winston';
-import { format } from 'winston';
-import rotate from 'winston-daily-rotate-file';
+type GameData = { id: string; name: string; genre: string; rating: number; };
 
-const logTransport = new rotate({
-  filename: 'logs/%DATE%-results.log',
-  datePattern: 'YYYY-MM-DD',
-  zippedArchive: true,
-  pool: 1000,
-  maxSize: '20m',
-  maxFiles: '14d',
-  format: format.combine(
-    format.timestamp(),
-    format.json(),
-  ),
-});
+type FilterCriteria = { genre?: string; minRating?: number; };
 
-const logger = winston.createLogger({
-  level: 'info',
-  transports: [
-    logTransport,
-    new winston.transports.Console({
-      format: format.combine(
-        format.colorize(),
-        format.simple(),
-      ),
-    }),
-  ],
-});
+function filterGames(games: GameData[], criteria: FilterCriteria): GameData[] {
+    return games.filter(game => {
+        const genreMatch = criteria.genre ? game.genre === criteria.genre : true;
+        const ratingMatch = criteria.minRating ? game.rating >= criteria.minRating : true;
+        return genreMatch && ratingMatch;
+    });
+}
 
-export const logInfo = (message: string) => {
-  logger.info(message);
-};
+function sortGames(games: GameData[], key: keyof GameData, ascending: boolean = true): GameData[] {
+    return games.sort((a, b) => {
+        if (a[key] < b[key]) return ascending ? -1 : 1;
+        if (a[key] > b[key]) return ascending ? 1 : -1;
+        return 0;
+    });
+}
 
-export const logError = (message: string) => {
-  logger.error(message);
-};
+function uniqueGenres(games: GameData[]): string[] {
+    return Array.from(new Set(games.map(game => game.genre)));
+}
 
-export const logDebug = (message: string) => {
-  logger.debug(message);
-};
-
-export default logger;
+export { GameData, FilterCriteria, filterGames, sortGames, uniqueGenres };
