@@ -1,45 +1,42 @@
-export function parseJson<T>(jsonString: string): T | null {
-    try {
-        return JSON.parse(jsonString) as T;
-    } catch (error) {
-        console.error('Invalid JSON string:', jsonString);
-        return null;
-    }
+export function throttle(fn: Function, wait: number) {
+    let lastTime = 0;
+    return function(...args: any[]) {
+        const now = Date.now();
+        if (now - lastTime >= wait) {
+            lastTime = now;
+            return fn(...args);
+        }
+    };
 }
 
-export function safeDivide(numerator: number, denominator: number): number | null {
-    if (denominator === 0) {
-        console.warn('Division by zero attempted');
-        return null;
-    }
-    return numerator / denominator;
+export function debounce(fn: Function, delay: number) {
+    let timeoutId: NodeJS.Timeout | null = null;
+    return function(...args: any[]) {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+        timeoutId = setTimeout(() => {
+            fn(...args);
+        }, delay);
+    };
 }
 
-export function fetchWithTimeout(url: string, options: RequestInit, timeout: number): Promise<Response> {
-    return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => {
-            reject(new Error('Request timed out'));
-        }, timeout);
-
-        fetch(url, options)
-            .then(response => {
-                clearTimeout(timer);
-                if (!response.ok) {
-                    reject(new Error(`HTTP error! status: ${response.status}`));
-                }
-                resolve(response);
-            })
-            .catch(error => {
-                clearTimeout(timer);
-                reject(error);
-            });
-    });
+export function memoize(fn: Function) {
+    const cache: { [key: string]: any } = {};
+    return function(...args: any[]) {
+        const key = JSON.stringify(args);
+        if (key in cache) {
+            return cache[key];
+        }
+        const result = fn(...args);
+        cache[key] = result;
+        return result;
+    };
 }
 
-export function validateUserInput(input: string, minLength: number): boolean {
-    if (input.trim().length < minLength) {
-        console.warn(`Input is too short: ${input}`);
-        return false;
+export function batchProcess(items: any[], batchSize: number, processFn: Function) {
+    for (let i = 0; i < items.length; i += batchSize) {
+        const batch = items.slice(i, i + batchSize);
+        processFn(batch);
     }
-    return true;
 }
