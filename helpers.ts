@@ -1,34 +1,33 @@
-type CustomError = { message: string; code: number; };
-
-function handleError(error: unknown): CustomError {
-    if (error instanceof Error) {
-        return { message: error.message, code: 500 };
-    } else if (typeof error === 'string') {
-        return { message: error, code: 400 };
-    }
-    return { message: 'An unknown error occurred', code: 500 };
+export function randomElement<T>(array: T[]): T {
+    const randomIndex = Math.floor(Math.random() * array.length);
+    return array[randomIndex];
 }
 
-function safeExecute<T>(fn: () => T): T | CustomError {
-    try {
-        return fn();
-    } catch (error) {
-        return handleError(error);
-    }
+export function shuffleArray<T>(array: T[]): T[] {
+    return array.sort(() => Math.random() - 0.5);
 }
 
-function divide(a: number, b: number): number | CustomError {
-    if (b === 0) {
-        return handleError('Division by zero');
-    }
-    return a / b;
+export function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function processInput(input: unknown): string | CustomError {
-    if (typeof input !== 'string') {
-        return handleError('Input must be a string');
-    }
-    return input.trim();
+export function debounce<T>(func: (...args: any[]) => T, wait: number): (...args: any[]) => void {
+    let timeout: NodeJS.Timeout;
+    return function executedFunction(...args: any[]) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }
 
-export { safeExecute, divide, processInput };
+export function generateUniqueId(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+        .replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0,
+                v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+}
