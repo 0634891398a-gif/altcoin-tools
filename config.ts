@@ -1,39 +1,28 @@
-export interface GameConfig {
-    gameName: string;
-    maxPlayers: number;
-    initialResources: ResourceConfig;
-    rules: GameRules;
-}
+import { validateInput } from './utils';
 
-export interface ResourceConfig {
-    gold: number;
-    silver: number;
-    gems: number;
-}
+export class GameConfig {
+    private gameName: string;
+    private maxPlayers: number;
+    private gameDuration: number;
 
-export interface GameRules {
-    timeLimit: number;
-    pointsToWin: number;
-}
-
-export const defaultConfig: GameConfig = {
-    gameName: 'CryptoQuest',
-    maxPlayers: 10,
-    initialResources: {
-        gold: 100,
-        silver: 50,
-        gems: 10
-    },
-    rules: {
-        timeLimit: 3600,
-        pointsToWin: 100
+    constructor(gameName: string, maxPlayers: number, gameDuration: number) {
+        if (!this.validateGameConfig(gameName, maxPlayers, gameDuration)) {
+            throw new Error('Invalid game configuration.');
+        }
+        this.gameName = gameName;
+        this.maxPlayers = maxPlayers;
+        this.gameDuration = gameDuration;
     }
+
+    private validateGameConfig(gameName: string, maxPlayers: number, gameDuration: number): boolean {
+        return validateInput(gameName, maxPlayers, gameDuration);
+    }
+
+    public getConfig(): object {
+        return { gameName: this.gameName, maxPlayers: this.maxPlayers, gameDuration: this.gameDuration };
+    }
+}
+
+export const createGame = (gameName: string, maxPlayers: number, gameDuration: number): GameConfig => {
+    return new GameConfig(gameName, maxPlayers, gameDuration);
 };
-
-export function getConfig(): GameConfig {
-    return { ...defaultConfig };
-}
-
-export function updateConfig(newConfig: Partial<GameConfig>): GameConfig {
-    return { ...defaultConfig, ...newConfig };
-}
