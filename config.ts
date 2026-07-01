@@ -1,28 +1,28 @@
-import { validateInput } from './utils';
+import fs from 'fs';
+import path from 'path';
 
-export class GameConfig {
-    private gameName: string;
-    private maxPlayers: number;
-    private gameDuration: number;
-
-    constructor(gameName: string, maxPlayers: number, gameDuration: number) {
-        if (!this.validateGameConfig(gameName, maxPlayers, gameDuration)) {
-            throw new Error('Invalid game configuration.');
-        }
-        this.gameName = gameName;
-        this.maxPlayers = maxPlayers;
-        this.gameDuration = gameDuration;
-    }
-
-    private validateGameConfig(gameName: string, maxPlayers: number, gameDuration: number): boolean {
-        return validateInput(gameName, maxPlayers, gameDuration);
-    }
-
-    public getConfig(): object {
-        return { gameName: this.gameName, maxPlayers: this.maxPlayers, gameDuration: this.gameDuration };
-    }
+interface Config {
+    dbHost: string;
+    dbPort: number;
+    apiEndpoint: string;
 }
 
-export const createGame = (gameName: string, maxPlayers: number, gameDuration: number): GameConfig => {
-    return new GameConfig(gameName, maxPlayers, gameDuration);
+const defaultConfig: Config = {
+    dbHost: 'localhost',
+    dbPort: 5432,
+    apiEndpoint: 'http://localhost:3000/api',
 };
+
+const loadConfig = (filePath: string): Config => {
+    try {
+        const fullPath = path.resolve(filePath);
+        const configFile = fs.readFileSync(fullPath, 'utf8');
+        const userConfig = JSON.parse(configFile);
+        return { ...defaultConfig, ...userConfig };
+    } catch (error) {
+        console.warn('Could not load config file, using defaults:', error);
+        return defaultConfig;
+    }
+};
+
+export const config = loadConfig('config.json');
