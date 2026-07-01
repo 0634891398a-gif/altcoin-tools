@@ -1,28 +1,28 @@
-import fs from 'fs';
-import path from 'path';
-
-interface Config {
-    dbHost: string;
-    dbPort: number;
-    apiEndpoint: string;
-}
-
-const defaultConfig: Config = {
-    dbHost: 'localhost',
-    dbPort: 5432,
-    apiEndpoint: 'http://localhost:3000/api',
+const performanceConfig = {
+    // Cache duration in milliseconds
+    cacheDuration: 60000,
+    // Maximum number of concurrent requests
+    maxConcurrentRequests: 5,
+    // Enable detailed logging
+    enableLogging: false,
+    // Request timeout in milliseconds
+    requestTimeout: 10000,
 };
 
-const loadConfig = (filePath: string): Config => {
-    try {
-        const fullPath = path.resolve(filePath);
-        const configFile = fs.readFileSync(fullPath, 'utf8');
-        const userConfig = JSON.parse(configFile);
-        return { ...defaultConfig, ...userConfig };
-    } catch (error) {
-        console.warn('Could not load config file, using defaults:', error);
-        return defaultConfig;
+export const initializePerformanceSettings = () => {
+    if (performanceConfig.enableLogging) {
+        console.log('Performance settings initialized:', performanceConfig);
     }
 };
 
-export const config = loadConfig('config.json');
+export const getCacheDuration = () => performanceConfig.cacheDuration;
+
+export const getMaxConcurrentRequests = () => performanceConfig.maxConcurrentRequests;
+
+export const getRequestTimeout = () => performanceConfig.requestTimeout;
+
+export const setLogging = (isEnabled: boolean) => {
+    performanceConfig.enableLogging = isEnabled;
+};
+
+initializePerformanceSettings();
