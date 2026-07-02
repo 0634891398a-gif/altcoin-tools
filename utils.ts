@@ -1,42 +1,34 @@
-export function throttle(fn: Function, wait: number) {
-    let lastTime = 0;
-    return function(...args: any[]) {
-        const now = Date.now();
-        if (now - lastTime >= wait) {
-            lastTime = now;
-            return fn(...args);
-        }
-    };
+import fs from 'fs';
+import path from 'path';
+import winston from 'winston';
+import 'winston-daily-rotate-file';
+
+const logDir = path.join(__dirname, 'logs');
+
+if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir);
 }
 
-export function debounce(fn: Function, delay: number) {
-    let timeoutId: NodeJS.Timeout | null = null;
-    return function(...args: any[]) {
-        if (timeoutId) {
-            clearTimeout(timeoutId);
-        }
-        timeoutId = setTimeout(() => {
-            fn(...args);
-        }, delay);
-    };
-}
+const transport = new winston.transports.DailyRotateFile({
+    filename: path.join(logDir, '%DATE%-results.log'),
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d'
+});
 
-export function memoize(fn: Function) {
-    const cache: { [key: string]: any } = {};
-    return function(...args: any[]) {
-        const key = JSON.stringify(args);
-        if (key in cache) {
-            return cache[key];
-        }
-        const result = fn(...args);
-        cache[key] = result;
-        return result;
-    };
-}
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json()
+    ),
+    transports: [
+        transport,
+        new winston.transports.Console({
+            format: winston.format.simple()
+        })
+    ]
+});
 
-export function batchProcess(items: any[], batchSize: number, processFn: Function) {
-    for (let i = 0; i < items.length; i += batchSize) {
-        const batch = items.slice(i, i + batchSize);
-        processFn(batch);
-    }
-}
+export default logger;
