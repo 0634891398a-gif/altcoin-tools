@@ -1,28 +1,30 @@
-const performanceConfig = {
-    // Cache duration in milliseconds
-    cacheDuration: 60000,
-    // Maximum number of concurrent requests
-    maxConcurrentRequests: 5,
-    // Enable detailed logging
-    enableLogging: false,
-    // Request timeout in milliseconds
-    requestTimeout: 10000,
-};
+import * as winston from 'winston';
+import 'winston-daily-rotate-file';
 
-export const initializePerformanceSettings = () => {
-    if (performanceConfig.enableLogging) {
-        console.log('Performance settings initialized:', performanceConfig);
-    }
-};
+const logDir = 'logs';
 
-export const getCacheDuration = () => performanceConfig.cacheDuration;
+const transport = new winston.transports.DailyRotateFile({
+  filename: `${logDir}/%DATE%-results.log`,
+  datePattern: 'YYYY-MM-DD',
+  zippedArchive: true,
+  maxSize: '20m',
+  maxFiles: '14d',
+});
 
-export const getMaxConcurrentRequests = () => performanceConfig.maxConcurrentRequests;
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ timestamp, level, message }) => {
+      return `${timestamp} ${level}: ${message}`;
+    })
+  ),
+  transports: [
+    transport,
+    new winston.transports.Console({
+      format: winston.format.simple(),
+    }),
+  ],
+});
 
-export const getRequestTimeout = () => performanceConfig.requestTimeout;
-
-export const setLogging = (isEnabled: boolean) => {
-    performanceConfig.enableLogging = isEnabled;
-};
-
-initializePerformanceSettings();
+export default logger;
