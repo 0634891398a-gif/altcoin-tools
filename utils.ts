@@ -1,1 +1,28 @@
-function memoize(fn: Function) {  const cache: Map<string, any> = new Map();  return function (...args: any[]) {    const key = JSON.stringify(args);    if (cache.has(key)) {      return cache.get(key);    }    const result = fn(...args);    cache.set(key, result);    return result;  };} function throttle(func: Function, limit: number) {  let lastFunc: ReturnType<typeof setTimeout>;  let lastRan: number;  return function(...args: any[]) {    if (!lastRan) {      func.apply(this, args);      lastRan = Date.now();    }    else {      clearTimeout(lastFunc);      lastFunc = setTimeout(() => {        if ((Date.now() - lastRan) >= limit) {          func.apply(this, args);          lastRan = Date.now();        }      }, limit - (Date.now() - lastRan));    }};} export { memoize, throttle };
+import fs from 'fs';
+import path from 'path';
+
+interface Config {
+    apiUrl: string;
+    timeout: number;
+    enableLogging: boolean;
+}
+
+const defaultConfig: Config = {
+    apiUrl: 'https://default.api.com/',
+    timeout: 5000,
+    enableLogging: false,
+};
+
+export function loadConfig(customPath: string): Config {
+    const configPath = path.resolve(customPath);
+    if (fs.existsSync(configPath)) {
+        const configFile = fs.readFileSync(configPath, 'utf-8');
+        try {
+            const customConfig = JSON.parse(configFile);
+            return { ...defaultConfig, ...customConfig };
+        } catch (error) {
+            console.error('Failed to parse config file:', error);
+        }
+    }
+    return defaultConfig;
+}
