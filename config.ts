@@ -1,30 +1,29 @@
-import * as winston from 'winston';
-import 'winston-daily-rotate-file';
+import * as fs from 'fs';
+import * as path from 'path';
 
-const logDir = 'logs';
+interface Config {
+    apiUrl: string;
+    port: number;
+    enableLogging: boolean;
+}
 
-const transport = new winston.transports.DailyRotateFile({
-  filename: `${logDir}/%DATE%-results.log`,
-  datePattern: 'YYYY-MM-DD',
-  zippedArchive: true,
-  maxSize: '20m',
-  maxFiles: '14d',
-});
+const defaultConfig: Config = {
+    apiUrl: 'https://api.defaultaltcoin.com',
+    port: 3000,
+    enableLogging: true,
+};
 
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf(({ timestamp, level, message }) => {
-      return `${timestamp} ${level}: ${message}`;
-    })
-  ),
-  transports: [
-    transport,
-    new winston.transports.Console({
-      format: winston.format.simple(),
-    }),
-  ],
-});
+const loadConfig = (filePath: string): Config => {
+    try {
+        const resolvedPath = path.resolve(__dirname, filePath);
+        const configFile = fs.readFileSync(resolvedPath, 'utf-8');
+        const userConfig: Partial<Config> = JSON.parse(configFile);
+        return { ...defaultConfig, ...userConfig };
+    } catch (error) {
+        console.warn('Could not load config, using defaults.');
+        return defaultConfig;
+    }
+};
 
-export default logger;
+const config = loadConfig('./config.json');
+export default config;
