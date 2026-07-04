@@ -1,33 +1,29 @@
-export function randomElement<T>(array: T[]): T {
-    const randomIndex = Math.floor(Math.random() * array.length);
-    return array[randomIndex];
+// Helper function to generate random in-game currency
+export function generateRandomCurrency(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function shuffleArray<T>(array: T[]): T[] {
-    return array.sort(() => Math.random() - 0.5);
+// Helper function to format in-game currency into a human-readable string
+export function formatCurrency(amount: number): string {
+    return `💰 ${amount.toFixed(2)}`;
 }
 
-export function delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+// Helper function to decide if a player receives a reward
+export function shouldRewardPlayer(probability: number): boolean {
+    return Math.random() < probability;
 }
 
-export function debounce<T>(func: (...args: any[]) => T, wait: number): (...args: any[]) => void {
-    let timeout: NodeJS.Timeout;
-    return function executedFunction(...args: any[]) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
+// Helper function to calculate experience points after leveling up
+export function calculateExperience(points: number, level: number): number {
+    return points + (level * 100);
 }
 
-export function generateUniqueId(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-        .replace(/[xy]/g, function(c) {
-            const r = Math.random() * 16 | 0,
-                v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
+// Helper function to determine if an item is mythical based on its rarity
+export function isMythicalItem(rarity: string): boolean {
+    return rarity.toLowerCase() === 'mythical';
+}
+
+// Helper function to generate a unique item ID
+export function generateItemId(): string {
+    return `item-${Math.random().toString(36).substr(2, 9)}`;
 }
