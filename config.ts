@@ -1,29 +1,10 @@
-import * as fs from 'fs';
-import * as path from 'path';
+export interface GameConfig {  title: string;  maxPlayers: number;  hasInAppPurchases: boolean;  serverIp: string;}
 
-interface Config {
-    apiUrl: string;
-    port: number;
-    enableLogging: boolean;
-}
+export class ConfigValidator {  static validate(config: GameConfig): boolean {    if (!config.title || config.title.length < 3) {      console.error('Invalid title: must be at least 3 characters.');      return false;    }
+    if (config.maxPlayers < 1 || config.maxPlayers > 100) {      console.error('Invalid maxPlayers: must be between 1 and 100.');      return false;    }
+    const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;    if (!ipPattern.test(config.serverIp)) {      console.error('Invalid server IP format.');      return false;    }
+    return true;  }}
 
-const defaultConfig: Config = {
-    apiUrl: 'https://api.defaultaltcoin.com',
-    port: 3000,
-    enableLogging: true,
-};
+const gameConfig: GameConfig = {  title: 'Epic Quest',  maxPlayers: 10,  hasInAppPurchases: true,  serverIp: '192.168.1.1'};
 
-const loadConfig = (filePath: string): Config => {
-    try {
-        const resolvedPath = path.resolve(__dirname, filePath);
-        const configFile = fs.readFileSync(resolvedPath, 'utf-8');
-        const userConfig: Partial<Config> = JSON.parse(configFile);
-        return { ...defaultConfig, ...userConfig };
-    } catch (error) {
-        console.warn('Could not load config, using defaults.');
-        return defaultConfig;
-    }
-};
-
-const config = loadConfig('./config.json');
-export default config;
+if (ConfigValidator.validate(gameConfig)) {  console.log('Game configuration is valid.');} else {  console.error('Game configuration is invalid.');}
