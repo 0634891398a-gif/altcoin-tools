@@ -1,29 +1,45 @@
-// Helper function to generate random in-game currency
-export function generateRandomCurrency(min: number, max: number): number {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+// Utility functions for gaming altcoin tools
+
+/**
+ * Calculates the total score based on kills, assists, and deaths.
+ * @param kills - The number of kills made by the player.
+ * @param assists - The number of assists made by the player.
+ * @param deaths - The number of times the player died.
+ * @returns The total score calculated as (kills * 2 + assists - deaths).
+ */
+function calculateScore(kills: number, assists: number, deaths: number): number {
+    return (kills * 2) + assists - deaths;
 }
 
-// Helper function to format in-game currency into a human-readable string
-export function formatCurrency(amount: number): string {
-    return `💰 ${amount.toFixed(2)}`;
+/**
+ * Gets player rank based on score.
+ * @param score - The total score of the player.
+ * @returns A string representing the player's rank.
+ */
+function getPlayerRank(score: number): string {
+    if (score >= 20) {
+        return 'Legend';
+    } else if (score >= 10) {
+        return 'Hero';
+    } else if (score >= 0) {
+        return 'Novice';
+    } else {
+        return 'Unranked';
+    }
 }
 
-// Helper function to decide if a player receives a reward
-export function shouldRewardPlayer(probability: number): boolean {
-    return Math.random() < probability;
+/**
+ * Formats the player's game statistics into a readable string.
+ * @param playerName - The name of the player.
+ * @param kills - The number of kills.
+ * @param assists - The number of assists.
+ * @param deaths - The number of deaths.
+ * @returns A formatted string containing the player's statistics.
+ */
+function formatStats(playerName: string, kills: number, assists: number, deaths: number): string {
+    const score = calculateScore(kills, assists, deaths);
+    const rank = getPlayerRank(score);
+    return `${playerName}: Kills: ${kills}, Assists: ${assists}, Deaths: ${deaths}, Score: ${score} - Rank: ${rank}`;
 }
 
-// Helper function to calculate experience points after leveling up
-export function calculateExperience(points: number, level: number): number {
-    return points + (level * 100);
-}
-
-// Helper function to determine if an item is mythical based on its rarity
-export function isMythicalItem(rarity: string): boolean {
-    return rarity.toLowerCase() === 'mythical';
-}
-
-// Helper function to generate a unique item ID
-export function generateItemId(): string {
-    return `item-${Math.random().toString(36).substr(2, 9)}`;
-}
+export { calculateScore, getPlayerRank, formatStats };
