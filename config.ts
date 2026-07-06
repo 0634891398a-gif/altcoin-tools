@@ -1,10 +1,26 @@
-export interface GameConfig {  title: string;  maxPlayers: number;  hasInAppPurchases: boolean;  serverIp: string;}
+// Interface for configuration options
+interface ConfigOptions {
+    settingA?: string;
+    settingB?: number;
+    settingC?: boolean;
+}
 
-export class ConfigValidator {  static validate(config: GameConfig): boolean {    if (!config.title || config.title.length < 3) {      console.error('Invalid title: must be at least 3 characters.');      return false;    }
-    if (config.maxPlayers < 1 || config.maxPlayers > 100) {      console.error('Invalid maxPlayers: must be between 1 and 100.');      return false;    }
-    const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;    if (!ipPattern.test(config.serverIp)) {      console.error('Invalid server IP format.');      return false;    }
-    return true;  }}
+// Default configuration values
+const defaultConfig: ConfigOptions = {
+    settingA: 'defaultA',
+    settingB: 10,
+    settingC: true
+};
 
-const gameConfig: GameConfig = {  title: 'Epic Quest',  maxPlayers: 10,  hasInAppPurchases: true,  serverIp: '192.168.1.1'};
+// Function to load configuration with defaults
+function loadConfig(userConfig: ConfigOptions): ConfigOptions {
+    return {...defaultConfig, ...userConfig};
+}
 
-if (ConfigValidator.validate(gameConfig)) {  console.log('Game configuration is valid.');} else {  console.error('Game configuration is invalid.');}
+// Example of usage: loading user's custom config
+const userConfig: ConfigOptions = {
+    settingA: 'customA',
+};
+const finalConfig = loadConfig(userConfig);
+
+console.log(finalConfig); // { settingA: 'customA', settingB: 10, settingC: true }
