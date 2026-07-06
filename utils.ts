@@ -1,28 +1,36 @@
-import fs from 'fs';
-import path from 'path';
-
-interface Config {
-    apiUrl: string;
-    timeout: number;
-    enableLogging: boolean;
+function isValidNumber(value: any): boolean {
+    return typeof value === 'number' && !isNaN(value);
 }
 
-const defaultConfig: Config = {
-    apiUrl: 'https://default.api.com/',
-    timeout: 5000,
-    enableLogging: false,
-};
+function handleError(error: Error): void {
+    console.error(`Error encountered: ${error.message}`);
+}
 
-export function loadConfig(customPath: string): Config {
-    const configPath = path.resolve(customPath);
-    if (fs.existsSync(configPath)) {
-        const configFile = fs.readFileSync(configPath, 'utf-8');
-        try {
-            const customConfig = JSON.parse(configFile);
-            return { ...defaultConfig, ...customConfig };
-        } catch (error) {
-            console.error('Failed to parse config file:', error);
+function safeDivide(a: number, b: number): number | null {
+    try {
+        if (!isValidNumber(a) || !isValidNumber(b)) {
+            throw new Error('Invalid input: Inputs must be numbers.');
         }
+        if (b === 0) {
+            throw new Error('Division by zero error.');
+        }
+        return a / b;
+    } catch (error) {
+        handleError(error);
+        return null;
     }
-    return defaultConfig;
 }
+
+function processTransaction(amount: number): void {
+    try {
+        if (!isValidNumber(amount)) {
+            throw new Error('Invalid transaction amount.');
+        }
+        // Process transaction logic here, e.g., updating balance
+        console.log(`Processed transaction of: ${amount}`);
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+export { safeDivide, processTransaction };
