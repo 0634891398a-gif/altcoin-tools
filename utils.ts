@@ -1,36 +1,29 @@
-function isValidNumber(value: any): boolean {
-    return typeof value === 'number' && !isNaN(value);
-}
-
-function handleError(error: Error): void {
-    console.error(`Error encountered: ${error.message}`);
-}
-
-function safeDivide(a: number, b: number): number | null {
-    try {
-        if (!isValidNumber(a) || !isValidNumber(b)) {
-            throw new Error('Invalid input: Inputs must be numbers.');
-        }
-        if (b === 0) {
-            throw new Error('Division by zero error.');
-        }
-        return a / b;
-    } catch (error) {
-        handleError(error);
-        return null;
+export function shuffleArray<T>(array: T[]): T[] {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
     }
+    return array;
 }
 
-function processTransaction(amount: number): void {
-    try {
-        if (!isValidNumber(amount)) {
-            throw new Error('Invalid transaction amount.');
+export function generateRandomNumber(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function formatCurrency(value: number): string {
+    return value.toFixed(2);
+}
+
+export function debounce<T>(func: (...args: T[]) => void, delay: number): (...args: T[]) => void {
+    let timeoutId: NodeJS.Timeout | null = null;
+    return (...args: T[]) => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
         }
-        // Process transaction logic here, e.g., updating balance
-        console.log(`Processed transaction of: ${amount}`);
-    } catch (error) {
-        handleError(error);
-    }
+        timeoutId = setTimeout(() => func(...args), delay);
+    };
 }
 
-export { safeDivide, processTransaction };
+export function capitalizeFirstLetter(string: string): string {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
