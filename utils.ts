@@ -1,26 +1,34 @@
-import * as fs from 'fs';
+import fs from 'fs';
+import path from 'path';
+import winston from 'winston';
+import { format } from 'winston';
 
-interface Config {
-  apiUrl: string;
-  timeout: number;
-  retryAttempts: number;
+const logDirectory = path.join(__dirname, 'logs');
+
+if (!fs.existsSync(logDirectory)) {
+    fs.mkdirSync(logDirectory);
 }
 
-typedef DefaultConfig = {
-  apiUrl: 'https://api.default.com',
-  timeout: 5000,
-  retryAttempts: 3,
+const rotateOptions = {
+    filename: path.join(logDirectory, 'app-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
 };
 
-function loadConfig(filePath: string): Config {
-  let config: Partial<Config> = {};
-  try {
-    const rawData = fs.readFileSync(filePath, 'utf8');
-    config = JSON.parse(rawData);
-  } catch (error) {
-    console.error('Could not read config file, using defaults.', error);
-  }
-  return { ...DefaultConfig, ...config };
-}
+const logger = winston.createLogger({
+    level: 'info',
+    format: format.combine(
+        format.timestamp(),
+        format.json()
+    ),
+    transports: [
+        new winston.transports.Console({
+            format: format.simple(),
+        }),
+        new winston.transports.File(rotateOptions)
+    ],
+});
 
-export { loadConfig, Config };
+export default logger;
