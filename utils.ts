@@ -1,38 +1,26 @@
-/* 
- * Utility functions for gaming altcoin tools. 
- * Includes functions for calculating rewards and formatting outputs. 
- */
+import * as fs from 'fs';
 
-/** 
- * Calculates the reward based on input parameters. 
- * 
- * @param baseReward - The base reward amount. 
- * @param multiplier - The multiplier for the reward. 
- * @param playerLevel - The level of the player, affecting the reward. 
- * @returns The total calculated reward. 
- */
-function calculateReward(baseReward: number, multiplier: number, playerLevel: number): number {
-    return baseReward * multiplier * (1 + playerLevel / 10);
+interface Config {
+  apiUrl: string;
+  timeout: number;
+  retryAttempts: number;
 }
 
-/** 
- * Formats a number to a fixed decimal string. 
- * 
- * @param value - The number to format. 
- * @param decimals - The number of decimal places. 
- * @returns The formatted string representation of the number. 
- */
-function formatNumber(value: number, decimals: number = 2): string {
-    return value.toFixed(decimals);
+typedef DefaultConfig = {
+  apiUrl: 'https://api.default.com',
+  timeout: 5000,
+  retryAttempts: 3,
+};
+
+function loadConfig(filePath: string): Config {
+  let config: Partial<Config> = {};
+  try {
+    const rawData = fs.readFileSync(filePath, 'utf8');
+    config = JSON.parse(rawData);
+  } catch (error) {
+    console.error('Could not read config file, using defaults.', error);
+  }
+  return { ...DefaultConfig, ...config };
 }
 
-/** 
- * Generates a unique identifier for a player or item. 
- * 
- * @returns A unique string identifier. 
- */
-function generateUniqueId(): string {
-    return 'id-' + Math.random().toString(36).substr(2, 9);
-}
-
-export { calculateReward, formatNumber, generateUniqueId };
+export { loadConfig, Config };
