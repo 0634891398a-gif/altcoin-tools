@@ -1,26 +1,34 @@
-// Interface for configuration options
-interface ConfigOptions {
-    settingA?: string;
-    settingB?: number;
-    settingC?: boolean;
-}
-
-// Default configuration values
-const defaultConfig: ConfigOptions = {
-    settingA: 'defaultA',
-    settingB: 10,
-    settingC: true
+const config = {
+    apiUrl: 'https://api.altcoin-tools.com',
+    timeout: 5000,
+    retryAttempts: 3,
 };
 
-// Function to load configuration with defaults
-function loadConfig(userConfig: ConfigOptions): ConfigOptions {
-    return {...defaultConfig, ...userConfig};
+function handleError(error: unknown): string {
+    if (error instanceof Error) {
+        return `Error: ${error.message}`;
+    }
+    return 'An unknown error occurred';
 }
 
-// Example of usage: loading user's custom config
-const userConfig: ConfigOptions = {
-    settingA: 'customA',
-};
-const finalConfig = loadConfig(userConfig);
+async function fetchData(endpoint: string): Promise<any> {
+    let attempts = 0;
+    while (attempts < config.retryAttempts) {
+        try {
+            const response = await fetch(`${config.apiUrl}/${endpoint}`, { method: 'GET', timeout: config.timeout });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            attempts++;
+            const errorMessage = handleError(error);
+            console.error(`Attempt ${attempts}: ${errorMessage}`);
+            if (attempts >= config.retryAttempts) {
+                throw new Error('Max retry attempts reached.');
+            }
+        }
+    }
+}
 
-console.log(finalConfig); // { settingA: 'customA', settingB: 10, settingC: true }
+export { fetchData, handleError };
