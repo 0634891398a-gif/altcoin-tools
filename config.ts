@@ -1,34 +1,28 @@
-const config = {
-    apiUrl: 'https://api.altcoin-tools.com',
-    timeout: 5000,
-    retryAttempts: 3,
-};
+import * as fs from 'fs';
+import * as path from 'path';
+import winston from 'winston';
 
-function handleError(error: unknown): string {
-    if (error instanceof Error) {
-        return `Error: ${error.message}`;
-    }
-    return 'An unknown error occurred';
+const logDir = path.join(__dirname, 'logs');
+
+if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir);
 }
 
-async function fetchData(endpoint: string): Promise<any> {
-    let attempts = 0;
-    while (attempts < config.retryAttempts) {
-        try {
-            const response = await fetch(`${config.apiUrl}/${endpoint}`, { method: 'GET', timeout: config.timeout });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return await response.json();
-        } catch (error) {
-            attempts++;
-            const errorMessage = handleError(error);
-            console.error(`Attempt ${attempts}: ${errorMessage}`);
-            if (attempts >= config.retryAttempts) {
-                throw new Error('Max retry attempts reached.');
-            }
-        }
-    }
-}
+const transport = new winston.transports.File({
+    filename: path.join(logDir, 'app-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d'
+});
 
-export { fetchData, handleError };
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json()
+    ),
+    transports: [transport]
+});
+
+export default logger;
